@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Roblox Loadstring Generator</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #0f0f13;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      color: #e2e2e2;
+      padding: 2rem;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 680px;
+      background: #1a1a24;
+      border: 1px solid #2e2e42;
+      border-radius: 14px;
+      padding: 2.5rem 2.5rem 2rem;
+      box-shadow: 0 8px 40px rgba(0,0,0,.5);
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: .35rem;
+      color: #fff;
+    }
+
+    .subtitle {
+      font-size: .875rem;
+      color: #7b7b9a;
+      margin-bottom: 2rem;
+    }
+
+    label {
+      display: block;
+      font-size: .8rem;
+      font-weight: 600;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: #9999bb;
+      margin-bottom: .45rem;
+    }
+
+    input[type="url"] {
+      width: 100%;
+      padding: .7rem 1rem;
+      background: #0f0f18;
+      border: 1px solid #2e2e42;
+      border-radius: 8px;
+      color: #e2e2e2;
+      font-size: .95rem;
+      outline: none;
+      transition: border-color .2s;
+    }
+    input[type="url"]:focus { border-color: #6c63ff; }
+    input[type="url"]::placeholder { color: #3e3e58; }
+
+    .output-wrapper {
+      position: relative;
+      margin-top: 1.5rem;
+    }
+
+    #output {
+      width: 100%;
+      min-height: 72px;
+      padding: .85rem 3.2rem .85rem 1rem;
+      background: #0f0f18;
+      border: 1px solid #2e2e42;
+      border-radius: 8px;
+      color: #a8ff78;
+      font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+      font-size: .88rem;
+      line-height: 1.55;
+      resize: none;
+      outline: none;
+      word-break: break-all;
+      transition: border-color .2s;
+    }
+    #output:focus { border-color: #6c63ff; }
+    #output.empty { color: #3e3e58; }
+
+    #copy-btn {
+      position: absolute;
+      top: .6rem;
+      right: .6rem;
+      background: #2a2a3e;
+      border: 1px solid #3a3a56;
+      border-radius: 6px;
+      color: #9999bb;
+      cursor: pointer;
+      padding: .35rem .55rem;
+      font-size: .78rem;
+      transition: background .15s, color .15s, border-color .15s;
+      line-height: 1;
+    }
+    #copy-btn:hover { background: #6c63ff; border-color: #6c63ff; color: #fff; }
+    #copy-btn.copied { background: #22c55e; border-color: #22c55e; color: #fff; }
+
+    .hint {
+      margin-top: .75rem;
+      font-size: .78rem;
+      color: #4a4a6a;
+    }
+
+    footer {
+      margin-top: 2.5rem;
+      font-size: .75rem;
+      color: #3a3a54;
+    }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <h1>Loadstring Generator</h1>
+  <p class="subtitle">Paste a raw script URL — get the Roblox loadstring instantly.</p>
+
+  <label for="url-input">Script URL</label>
+  <input
+    id="url-input"
+    type="url"
+    placeholder="https://raw.githubusercontent.com/..."
+    autocomplete="off"
+    spellcheck="false"
+  />
+
+  <div class="output-wrapper">
+    <textarea id="output" class="empty" readonly rows="3">Output will appear here...</textarea>
+    <button id="copy-btn" title="Copy to clipboard">Copy</button>
+  </div>
+
+  <p class="hint">Works with any direct URL to a .lua / .txt file (GitHub raw, pastebin raw, etc.)</p>
+</div>
+
+<footer>pealz1 &mdash; Roblox Loadstring Generator</footer>
+
+<script>
+  const input   = document.getElementById('url-input');
+  const output  = document.getElementById('output');
+  const copyBtn = document.getElementById('copy-btn');
+
+  const PLACEHOLDER = 'Output will appear here...';
+
+  function update() {
+    const url = input.value.trim();
+    if (!url) {
+      output.value = PLACEHOLDER;
+      output.classList.add('empty');
+      return;
+    }
+    output.value = `loadstring(game:HttpGet("${url}"))()`;
+    output.classList.remove('empty');
+  }
+
+  input.addEventListener('input', update);
+
+  copyBtn.addEventListener('click', () => {
+    const text = output.value;
+    if (!text || text === PLACEHOLDER) return;
+
+    navigator.clipboard.writeText(text).then(() => {
+      copyBtn.textContent = 'Copied!';
+      copyBtn.classList.add('copied');
+      setTimeout(() => {
+        copyBtn.textContent = 'Copy';
+        copyBtn.classList.remove('copied');
+      }, 1800);
+    });
+  });
+
+  // Allow clicking the output box to also copy
+  output.addEventListener('click', () => {
+    if (output.value && output.value !== PLACEHOLDER) {
+      output.select();
+    }
+  });
+</script>
+</body>
+</html>
