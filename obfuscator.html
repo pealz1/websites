@@ -19,6 +19,7 @@
       --yellow:   #fbbf24;
       --orange:   #f97316;
       --red:      #f87171;
+      --pink:     #e879f9;
       --text:     #e2e2f0;
       --muted:    #6b6b8f;
       --muted2:   #4a4a6e;
@@ -135,6 +136,7 @@
     .dot-yellow { background: var(--yellow);  box-shadow: 0 0 8px var(--yellow); }
     .dot-orange { background: var(--orange);  box-shadow: 0 0 8px var(--orange); }
     .dot-red    { background: var(--red);     box-shadow: 0 0 8px var(--red); }
+    .dot-pink   { background: var(--pink);    box-shadow: 0 0 8px var(--pink); }
 
     /* ── Language toggle ── */
     .lang-toggle {
@@ -236,6 +238,7 @@
     .badge-yellow { background: rgba(251,191,36,.15); color: var(--yellow); }
     .badge-orange { background: rgba(249,115,22,.15); color: var(--orange); }
     .badge-red    { background: rgba(248,113,113,.15); color: var(--red); }
+    .badge-pink   { background: rgba(232,121,249,.15); color: var(--pink); }
 
     .preset-desc {
       font-size: .74rem;
@@ -573,6 +576,15 @@
         <div class="preset-time">est. 2-8s</div>
       </div>
 
+      <div class="preset-card" data-preset="Maximum" onclick="selectPreset(this)">
+        <div class="preset-name">
+          Maximum
+          <span class="preset-badge badge-pink">3-Layer</span>
+        </div>
+        <div class="preset-desc">VM bytecode → string/number obf → custom byte-rotation wrapper. Defeats most deobfuscators.</div>
+        <div class="preset-time">est. 20-60s</div>
+      </div>
+
     </div>
 
     <!-- Executor compatibility table -->
@@ -586,22 +598,23 @@
           <th>Medium</th>
           <th>Strong</th>
           <th>Vmify</th>
+          <th>Maximum</th>
         </tr>
       </thead>
       <tbody>
-        <tr><td>Synapse X</td>     <td class="compat-full">✓</td><td class="compat-full">✓</td><td class="compat-full">✓</td><td class="compat-full">✓</td><td class="compat-full">✓</td></tr>
-        <tr><td>KRNL</td>          <td class="compat-full">✓</td><td class="compat-full">✓</td><td class="compat-full">✓</td><td class="compat-full">✓</td><td class="compat-full">✓</td></tr>
-        <tr><td>Xeno</td>          <td class="compat-full">✓</td><td class="compat-full">✓</td><td class="compat-full">✓</td><td class="compat-full">✓</td><td class="compat-full">✓</td></tr>
-        <tr><td>Solara</td>        <td class="compat-full">✓</td><td class="compat-full">✓</td><td class="compat-full">✓</td><td class="compat-full">✓</td><td class="compat-partial">⚠</td></tr>
-        <tr><td>Codex</td>         <td class="compat-full">✓</td><td class="compat-full">✓</td><td class="compat-full">✓</td><td class="compat-full">✓</td><td class="compat-partial">⚠</td></tr>
-        <tr><td>Fluxus</td>        <td class="compat-full">✓</td><td class="compat-full">✓</td><td class="compat-full">✓</td><td class="compat-partial">⚠</td><td class="compat-none">✗</td></tr>
-        <tr><td>Delta</td>         <td class="compat-full">✓</td><td class="compat-full">✓</td><td class="compat-full">✓</td><td class="compat-partial">⚠</td><td class="compat-none">✗</td></tr>
-        <tr><td>Electron</td>      <td class="compat-full">✓</td><td class="compat-full">✓</td><td class="compat-full">✓</td><td class="compat-partial">⚠</td><td class="compat-none">✗</td></tr>
-        <tr><td>Wave</td>          <td class="compat-full">✓</td><td class="compat-full">✓</td><td class="compat-full">✓</td><td class="compat-partial">⚠</td><td class="compat-partial">⚠</td></tr>
-        <tr><td>JJSploit</td>      <td class="compat-full">✓</td><td class="compat-full">✓</td><td class="compat-partial">⚠</td><td class="compat-none">✗</td><td class="compat-none">✗</td></tr>
-        <tr><td>Hydrogen</td>      <td class="compat-full">✓</td><td class="compat-full">✓</td><td class="compat-partial">⚠</td><td class="compat-none">✗</td><td class="compat-none">✗</td></tr>
-        <tr><td>Arceus X</td>      <td class="compat-full">✓</td><td class="compat-full">✓</td><td class="compat-partial">⚠</td><td class="compat-none">✗</td><td class="compat-none">✗</td></tr>
-        <tr><td>Celery</td>        <td class="compat-full">✓</td><td class="compat-full">✓</td><td class="compat-partial">⚠</td><td class="compat-none">✗</td><td class="compat-none">✗</td></tr>
+        <tr><td>Synapse X</td>     <td class="compat-full">✓</td><td class="compat-full">✓</td><td class="compat-full">✓</td><td class="compat-full">✓</td><td class="compat-full">✓</td><td class="compat-full">✓</td></tr>
+        <tr><td>KRNL</td>          <td class="compat-full">✓</td><td class="compat-full">✓</td><td class="compat-full">✓</td><td class="compat-full">✓</td><td class="compat-full">✓</td><td class="compat-full">✓</td></tr>
+        <tr><td>Xeno</td>          <td class="compat-full">✓</td><td class="compat-full">✓</td><td class="compat-full">✓</td><td class="compat-full">✓</td><td class="compat-full">✓</td><td class="compat-full">✓</td></tr>
+        <tr><td>Solara</td>        <td class="compat-full">✓</td><td class="compat-full">✓</td><td class="compat-full">✓</td><td class="compat-full">✓</td><td class="compat-partial">⚠</td><td class="compat-partial">⚠</td></tr>
+        <tr><td>Codex</td>         <td class="compat-full">✓</td><td class="compat-full">✓</td><td class="compat-full">✓</td><td class="compat-full">✓</td><td class="compat-partial">⚠</td><td class="compat-partial">⚠</td></tr>
+        <tr><td>Fluxus</td>        <td class="compat-full">✓</td><td class="compat-full">✓</td><td class="compat-full">✓</td><td class="compat-full">✓</td><td class="compat-none">✗</td><td class="compat-none">✗</td></tr>
+        <tr><td>Delta</td>         <td class="compat-full">✓</td><td class="compat-full">✓</td><td class="compat-full">✓</td><td class="compat-full">✓</td><td class="compat-none">✗</td><td class="compat-none">✗</td></tr>
+        <tr><td>Electron</td>      <td class="compat-full">✓</td><td class="compat-full">✓</td><td class="compat-full">✓</td><td class="compat-full">✓</td><td class="compat-none">✗</td><td class="compat-none">✗</td></tr>
+        <tr><td>Wave</td>          <td class="compat-full">✓</td><td class="compat-full">✓</td><td class="compat-full">✓</td><td class="compat-full">✓</td><td class="compat-partial">⚠</td><td class="compat-partial">⚠</td></tr>
+        <tr><td>JJSploit</td>      <td class="compat-full">✓</td><td class="compat-full">✓</td><td class="compat-partial">⚠</td><td class="compat-partial">⚠</td><td class="compat-none">✗</td><td class="compat-none">✗</td></tr>
+        <tr><td>Hydrogen</td>      <td class="compat-full">✓</td><td class="compat-full">✓</td><td class="compat-partial">⚠</td><td class="compat-partial">⚠</td><td class="compat-none">✗</td><td class="compat-none">✗</td></tr>
+        <tr><td>Arceus X</td>      <td class="compat-full">✓</td><td class="compat-full">✓</td><td class="compat-partial">⚠</td><td class="compat-partial">⚠</td><td class="compat-none">✗</td><td class="compat-none">✗</td></tr>
+        <tr><td>Celery</td>        <td class="compat-full">✓</td><td class="compat-full">✓</td><td class="compat-partial">⚠</td><td class="compat-partial">⚠</td><td class="compat-none">✗</td><td class="compat-none">✗</td></tr>
       </tbody>
     </table>
 
@@ -734,11 +747,12 @@
   let toastTimer;
 
   const PRESET_EST = {
-    Minify: '< 1s',
-    Weak:   '2 – 5s',
-    Medium: '5 – 15s',
-    Strong: '10 – 30s',
-    Vmify:  '2 – 8s',
+    Minify:  '< 1s',
+    Weak:    '2 – 5s',
+    Medium:  '5 – 15s',
+    Strong:  '10 – 30s',
+    Vmify:   '2 – 8s',
+    Maximum: '20 – 60s',
   };
 
   // ── DOM refs ─────────────────────────────────────────────────────────────
