@@ -37,13 +37,18 @@ function getFactory() {
   return factoryPromise;
 }
 
-// Wrapper script — bypasses prometheus.lua's debug.getinfo path setup,
-// calls Pipeline:fromConfig + pipeline:apply directly.
+// Wrapper script — reads source from a virtual file (avoids JS→Lua string
+// encoding issues), bypasses prometheus.lua's debug.getinfo path setup.
 const OBFUSCATE_LUA = `
 -- config.lua iterates arg at load time; always force a real Lua table
 arg = {}
 
 package.path = "?.lua;" .. package.path
+
+-- Read source code from virtual file (set by JS before engine creation)
+local f = assert(io.open(__src_file, "r"), "cannot open source file")
+local sourceCode = f:read("*a")
+f:close()
 
 local Pipeline = require("prometheus.pipeline")
 local Presets  = require("presets")
@@ -59,7 +64,7 @@ for k, v in pairs(presetConfig) do config[k] = v end
 config.LuaVersion = __lua_version
 
 local pipeline = Pipeline:fromConfig(config)
-return pipeline:apply(__source_code, "input.lua")
+return pipeline:apply(sourceCode, "input.lua")
 `;
 
 module.exports = async function handler(req, res) {
@@ -90,13 +95,19 @@ module.exports = async function handler(req, res) {
 
   try {
     const factory = await getFactory();
+
+    // Mount source code as a virtual file with a unique per-request name
+    // so concurrent requests don't overwrite each other on the shared FS
+    const srcFile = `__src_${Date.now()}_${Math.random().toString(36).slice(2, 8)}.lua`;
+    await factory.mountFile(srcFile, Buffer.from(code, 'utf8'));
+
     const lua = await factory.createEngine();
 
     try {
-      // Inject globals the wrapper script reads (arg set via Lua, not JS, to ensure proper table type)
+      // Pass short safe strings as globals; source code goes via the virtual file
+      lua.global.set('__src_file', srcFile);
       lua.global.set('__preset_name', preset);
       lua.global.set('__lua_version', luaVersion || 'Lua51');
-      lua.global.set('__source_code', code);
 
       const obfuscated = await lua.doString(OBFUSCATE_LUA);
 
