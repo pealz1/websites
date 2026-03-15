@@ -40,8 +40,8 @@ function getFactory() {
 // Wrapper script — bypasses prometheus.lua's debug.getinfo path setup,
 // calls Pipeline:fromConfig + pipeline:apply directly.
 const OBFUSCATE_LUA = `
--- ensure arg exists (config.lua iterates it at load time)
-if not arg then arg = {} end
+-- config.lua iterates arg at load time; always force a real Lua table
+arg = {}
 
 package.path = "?.lua;" .. package.path
 
@@ -93,8 +93,7 @@ module.exports = async function handler(req, res) {
     const lua = await factory.createEngine();
 
     try {
-      // Inject globals the wrapper script reads
-      lua.global.set('arg', {});
+      // Inject globals the wrapper script reads (arg set via Lua, not JS, to ensure proper table type)
       lua.global.set('__preset_name', preset);
       lua.global.set('__lua_version', luaVersion || 'Lua51');
       lua.global.set('__source_code', code);
