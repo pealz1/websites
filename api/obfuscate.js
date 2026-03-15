@@ -45,6 +45,9 @@ arg = {}
 
 package.path = "?.lua;" .. package.path
 
+-- Silence all print output so logger/AntiTamper messages don't contaminate the result
+print = function() end
+
 -- Lua 5.1 polyfills (prometheus.lua normally sets these, but we bypass it)
 _G.newproxy = _G.newproxy or function(arg)
   if arg then return setmetatable({}, {}) end
@@ -68,8 +71,15 @@ local f = assert(io.open(__src_file, "r"), "cannot open source file")
 local sourceCode = f:read("*a")
 f:close()
 
+local Logger   = require("logger")
 local Pipeline = require("prometheus.pipeline")
 local Presets  = require("presets")
+
+-- Suppress all logger output (errors still throw, but won't print)
+Logger.logLevel = Logger.LogLevel.Error
+Logger.logCallback  = function() end
+Logger.warnCallback = function() end
+Logger.debugCallback = function() end
 
 local presetConfig = Presets[__preset_name]
 if not presetConfig then
