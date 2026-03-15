@@ -5,184 +5,631 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Roblox Loadstring Generator</title>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
-    body {
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      background: #0f0f13;
-      font-family: 'Segoe UI', system-ui, sans-serif;
-      color: #e2e2e2;
-      padding: 2rem;
+    :root {
+      --bg:        #080810;
+      --surface:   #0f0f1a;
+      --surface2:  #141425;
+      --border:    #1e1e35;
+      --border2:   #2a2a48;
+      --accent:    #7c6dff;
+      --accent2:   #a78bfa;
+      --green:     #34d399;
+      --red:       #f87171;
+      --text:      #e2e2f0;
+      --muted:     #6b6b8f;
+      --muted2:    #4a4a6e;
+      --code:      #a0f0a0;
+      --code-obs:  #fbbf24;
     }
 
-    .card {
-      width: 100%;
-      max-width: 680px;
-      background: #1a1a24;
-      border: 1px solid #2e2e42;
-      border-radius: 14px;
-      padding: 2.5rem 2.5rem 2rem;
-      box-shadow: 0 8px 40px rgba(0,0,0,.5);
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', system-ui, sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── Background glow ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 40% at 20% 10%, rgba(124,109,255,.12) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 35% at 80% 85%, rgba(167,139,250,.08) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── Layout ── */
+    .page {
+      position: relative;
+      z-index: 1;
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 3.5rem 1.5rem 5rem;
+    }
+
+    /* ── Header ── */
+    header {
+      text-align: center;
+      margin-bottom: 3rem;
+      animation: fadeDown .6s ease both;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: .4rem;
+      background: rgba(124,109,255,.15);
+      border: 1px solid rgba(124,109,255,.3);
+      border-radius: 99px;
+      padding: .25rem .8rem;
+      font-size: .72rem;
+      font-weight: 600;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--accent2);
+      margin-bottom: 1rem;
     }
 
     h1 {
-      font-size: 1.5rem;
+      font-size: clamp(1.75rem, 5vw, 2.6rem);
       font-weight: 700;
-      margin-bottom: .35rem;
-      color: #fff;
+      line-height: 1.15;
+      background: linear-gradient(135deg, #fff 30%, var(--accent2) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: .6rem;
     }
 
     .subtitle {
-      font-size: .875rem;
-      color: #7b7b9a;
-      margin-bottom: 2rem;
+      color: var(--muted);
+      font-size: .95rem;
+      line-height: 1.6;
     }
 
-    label {
-      display: block;
-      font-size: .8rem;
+    /* ── Card ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+      margin-bottom: 1.25rem;
+      animation: fadeUp .5s ease both;
+      transition: border-color .2s;
+    }
+    .card:hover { border-color: var(--border2); }
+    .card:nth-child(2) { animation-delay: .1s; }
+    .card:nth-child(3) { animation-delay: .2s; }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.25rem;
+    }
+
+    .card-title {
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+      font-size: .9rem;
       font-weight: 600;
-      letter-spacing: .06em;
-      text-transform: uppercase;
-      color: #9999bb;
-      margin-bottom: .45rem;
+      color: var(--text);
+    }
+
+    .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .dot-purple { background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+    .dot-yellow { background: var(--code-obs); box-shadow: 0 0 8px var(--code-obs); }
+    .dot-green  { background: var(--green);    box-shadow: 0 0 8px var(--green); }
+
+    /* ── Input ── */
+    .input-wrap {
+      position: relative;
+    }
+
+    .input-wrap svg {
+      position: absolute;
+      left: .85rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted2);
+      pointer-events: none;
+      flex-shrink: 0;
     }
 
     input[type="url"] {
       width: 100%;
-      padding: .7rem 1rem;
-      background: #0f0f18;
-      border: 1px solid #2e2e42;
-      border-radius: 8px;
-      color: #e2e2e2;
-      font-size: .95rem;
+      padding: .75rem 1rem .75rem 2.5rem;
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: .9rem;
       outline: none;
-      transition: border-color .2s;
+      transition: border-color .2s, box-shadow .2s;
     }
-    input[type="url"]:focus { border-color: #6c63ff; }
-    input[type="url"]::placeholder { color: #3e3e58; }
+    input[type="url"]:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(124,109,255,.15);
+    }
+    input[type="url"]::placeholder { color: var(--muted2); }
+    input[type="url"].valid   { border-color: var(--green); }
+    input[type="url"].invalid { border-color: var(--red); }
 
-    .output-wrapper {
+    /* ── Output blocks ── */
+    .output-block {
+      margin-top: 1.25rem;
+    }
+
+    .output-label {
+      font-size: .72rem;
+      font-weight: 600;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: .45rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .char-count {
+      font-size: .7rem;
+      color: var(--muted2);
+      font-weight: 400;
+      letter-spacing: 0;
+      text-transform: none;
+    }
+
+    .output-area {
       position: relative;
-      margin-top: 1.5rem;
     }
 
-    #output {
+    textarea {
       width: 100%;
-      min-height: 72px;
-      padding: .85rem 3.2rem .85rem 1rem;
-      background: #0f0f18;
-      border: 1px solid #2e2e42;
-      border-radius: 8px;
-      color: #a8ff78;
-      font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
-      font-size: .88rem;
-      line-height: 1.55;
+      padding: .85rem 3.5rem .85rem 1rem;
+      background: #080810;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--code);
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: .82rem;
+      line-height: 1.6;
       resize: none;
       outline: none;
       word-break: break-all;
       transition: border-color .2s;
+      min-height: 72px;
     }
-    #output:focus { border-color: #6c63ff; }
-    #output.empty { color: #3e3e58; }
+    textarea.obs { color: var(--code-obs); }
+    textarea.placeholder { color: var(--muted2) !important; font-style: italic; }
 
-    #copy-btn {
+    textarea:focus { border-color: var(--border2); }
+
+    .copy-btn {
       position: absolute;
-      top: .6rem;
-      right: .6rem;
-      background: #2a2a3e;
-      border: 1px solid #3a3a56;
-      border-radius: 6px;
-      color: #9999bb;
+      top: .5rem;
+      right: .5rem;
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: 7px;
+      color: var(--muted);
       cursor: pointer;
-      padding: .35rem .55rem;
-      font-size: .78rem;
-      transition: background .15s, color .15s, border-color .15s;
-      line-height: 1;
+      padding: .3rem .6rem;
+      font-size: .72rem;
+      font-family: 'Inter', sans-serif;
+      font-weight: 500;
+      transition: all .15s;
+      display: flex;
+      align-items: center;
+      gap: .3rem;
+      white-space: nowrap;
     }
-    #copy-btn:hover { background: #6c63ff; border-color: #6c63ff; color: #fff; }
-    #copy-btn.copied { background: #22c55e; border-color: #22c55e; color: #fff; }
+    .copy-btn:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .copy-btn.ok    { background: var(--green);  border-color: var(--green);  color: #000; }
 
-    .hint {
-      margin-top: .75rem;
-      font-size: .78rem;
-      color: #4a4a6a;
+    /* ── Action row ── */
+    .actions {
+      display: flex;
+      gap: .75rem;
+      flex-wrap: wrap;
+      margin-top: 1.25rem;
     }
 
-    footer {
-      margin-top: 2.5rem;
-      font-size: .75rem;
-      color: #3a3a54;
+    .btn {
+      flex: 1;
+      min-width: 120px;
+      padding: .65rem 1.2rem;
+      border-radius: 9px;
+      font-family: 'Inter', sans-serif;
+      font-size: .85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .18s;
+      border: 1px solid transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: .4rem;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+    .btn-primary:hover { background: #6a5be8; filter: brightness(1.1); }
+
+    .btn-ghost {
+      background: var(--surface2);
+      color: var(--muted);
+      border-color: var(--border2);
+    }
+    .btn-ghost:hover { border-color: var(--accent); color: var(--accent2); }
+
+    /* ── Info pills ── */
+    .info-row {
+      display: flex;
+      gap: .6rem;
+      flex-wrap: wrap;
+      margin-top: 1rem;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: .35rem;
+      background: rgba(255,255,255,.04);
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      padding: .25rem .75rem;
+      font-size: .72rem;
+      color: var(--muted);
+    }
+
+    /* ── How it works ── */
+    .how-card {
+      background: rgba(124,109,255,.05);
+      border-color: rgba(124,109,255,.2);
+    }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+      margin-top: .5rem;
+    }
+
+    .step {
+      display: flex;
+      flex-direction: column;
+      gap: .4rem;
+    }
+
+    .step-num {
+      font-size: .72rem;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: .08em;
+    }
+
+    .step-title {
+      font-size: .85rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .step-desc {
+      font-size: .78rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    /* ── Toast ── */
+    #toast {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(1rem);
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: 10px;
+      padding: .6rem 1.2rem;
+      font-size: .82rem;
+      color: var(--text);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s, transform .2s;
+      z-index: 100;
+      white-space: nowrap;
+      box-shadow: 0 8px 32px rgba(0,0,0,.4);
+    }
+    #toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* ── Animations ── */
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 500px) {
+      .card { padding: 1.5rem; }
+      .btn  { min-width: 100%; flex: none; width: 100%; }
     }
   </style>
 </head>
 <body>
 
-<div class="card">
-  <h1>Loadstring Generator</h1>
-  <p class="subtitle">Paste a raw script URL — get the Roblox loadstring instantly.</p>
+<div class="page">
 
-  <label for="url-input">Script URL</label>
-  <input
-    id="url-input"
-    type="url"
-    placeholder="https://raw.githubusercontent.com/..."
-    autocomplete="off"
-    spellcheck="false"
-  />
+  <!-- Header -->
+  <header>
+    <div class="badge">
+      <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor"><circle cx="5" cy="5" r="5"/></svg>
+      Roblox Script Tools
+    </div>
+    <h1>Loadstring Generator</h1>
+    <p class="subtitle">Generate and obfuscate <code style="font-family:monospace;color:var(--accent2);font-size:.9em">loadstring(game:HttpGet())()</code> calls instantly.</p>
+  </header>
 
-  <div class="output-wrapper">
-    <textarea id="output" class="empty" readonly rows="3">Output will appear here...</textarea>
-    <button id="copy-btn" title="Copy to clipboard">Copy</button>
+  <!-- Main generator card -->
+  <div class="card" style="animation-delay:.05s">
+    <div class="card-header">
+      <div class="card-title">
+        <span class="dot dot-green"></span>
+        Script URL
+      </div>
+    </div>
+
+    <div class="input-wrap">
+      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+      </svg>
+      <input
+        id="url-input"
+        type="url"
+        placeholder="https://raw.githubusercontent.com/user/repo/main/script.lua"
+        autocomplete="off"
+        spellcheck="false"
+      />
+    </div>
+
+    <!-- Plain output -->
+    <div class="output-block">
+      <div class="output-label">
+        <span>Plain Loadstring</span>
+        <span class="char-count" id="plain-count"></span>
+      </div>
+      <div class="output-area">
+        <textarea id="plain-out" class="placeholder" readonly rows="2">Paste a URL above to generate...</textarea>
+        <button class="copy-btn" id="copy-plain" title="Copy">
+          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+          </svg>
+          Copy
+        </button>
+      </div>
+    </div>
+
+    <!-- Obfuscated output -->
+    <div class="output-block">
+      <div class="output-label">
+        <span>Obfuscated Loadstring</span>
+        <span class="char-count" id="obs-count"></span>
+      </div>
+      <div class="output-area">
+        <textarea id="obs-out" class="obs placeholder" readonly rows="2">Obfuscated output will appear here...</textarea>
+        <button class="copy-btn" id="copy-obs" title="Copy">
+          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+          </svg>
+          Copy
+        </button>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="actions">
+      <button class="btn btn-primary" id="copy-both-btn">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+          <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+        </svg>
+        Copy Both
+      </button>
+      <button class="btn btn-ghost" id="clear-btn">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+          <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+          <path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+        </svg>
+        Clear
+      </button>
+    </div>
+
+    <!-- Info pills -->
+    <div class="info-row">
+      <span class="pill">
+        <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+        Obfuscation hides the URL as byte escapes
+      </span>
+      <span class="pill">
+        <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+        Works with any direct .lua / .txt URL
+      </span>
+    </div>
   </div>
 
-  <p class="hint">Works with any direct URL to a .lua / .txt file (GitHub raw, pastebin raw, etc.)</p>
+  <!-- How it works -->
+  <div class="card how-card" style="animation-delay:.15s">
+    <div class="card-header" style="margin-bottom:.75rem">
+      <div class="card-title">
+        <span class="dot dot-purple"></span>
+        How Obfuscation Works
+      </div>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">01</div>
+        <div class="step-title">Input URL</div>
+        <div class="step-desc">Paste any raw script URL, e.g. from GitHub or Pastebin.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <div class="step-title">Byte Encoding</div>
+        <div class="step-desc">Each character is replaced with its ASCII byte escape — <code style="font-family:monospace;color:var(--accent2);font-size:.85em">\104\116\116\112...</code></div>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <div class="step-title">Valid Lua</div>
+        <div class="step-desc">Roblox interprets the escaped string identically — the URL is hidden from plain sight.</div>
+      </div>
+    </div>
+  </div>
+
 </div>
 
-<footer>pealz1 &mdash; Roblox Loadstring Generator</footer>
+<!-- Toast -->
+<div id="toast"></div>
 
 <script>
-  const input   = document.getElementById('url-input');
-  const output  = document.getElementById('output');
-  const copyBtn = document.getElementById('copy-btn');
+  const urlInput   = document.getElementById('url-input');
+  const plainOut   = document.getElementById('plain-out');
+  const obsOut     = document.getElementById('obs-out');
+  const plainCount = document.getElementById('plain-count');
+  const obsCount   = document.getElementById('obs-count');
+  const copyPlain  = document.getElementById('copy-plain');
+  const copyObs    = document.getElementById('copy-obs');
+  const copyBoth   = document.getElementById('copy-both-btn');
+  const clearBtn   = document.getElementById('clear-btn');
+  const toast      = document.getElementById('toast');
 
-  const PLACEHOLDER = 'Output will appear here...';
+  const PLAIN_PH = 'Paste a URL above to generate...';
+  const OBS_PH   = 'Obfuscated output will appear here...';
 
-  function update() {
-    const url = input.value.trim();
-    if (!url) {
-      output.value = PLACEHOLDER;
-      output.classList.add('empty');
-      return;
-    }
-    output.value = `loadstring(game:HttpGet("${url}"))()`;
-    output.classList.remove('empty');
+  let toastTimer;
+
+  function showToast(msg, duration = 2200) {
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), duration);
   }
 
-  input.addEventListener('input', update);
+  function obfuscate(url) {
+    return url.split('').map(c => '\\' + c.charCodeAt(0)).join('');
+  }
 
-  copyBtn.addEventListener('click', () => {
-    const text = output.value;
-    if (!text || text === PLACEHOLDER) return;
+  function isValidUrl(str) {
+    try { return Boolean(new URL(str)); }
+    catch { return false; }
+  }
 
+  function update() {
+    const raw = urlInput.value.trim();
+
+    if (!raw) {
+      plainOut.value = PLAIN_PH;
+      plainOut.classList.add('placeholder');
+      obsOut.value = OBS_PH;
+      obsOut.classList.add('placeholder');
+      plainCount.textContent = '';
+      obsCount.textContent = '';
+      urlInput.classList.remove('valid','invalid');
+      return;
+    }
+
+    const valid = isValidUrl(raw);
+    urlInput.classList.toggle('valid',   valid);
+    urlInput.classList.toggle('invalid', !valid);
+
+    const plain = `loadstring(game:HttpGet("${raw}"))()`;
+    const enc   = obfuscate(raw);
+    const obs   = `loadstring(game:HttpGet("${enc}"))()`;
+
+    plainOut.value = plain;
+    plainOut.classList.remove('placeholder');
+    obsOut.value = obs;
+    obsOut.classList.remove('placeholder');
+
+    plainCount.textContent = plain.length + ' chars';
+    obsCount.textContent   = obs.length   + ' chars';
+  }
+
+  function copyText(text, btn, msg) {
+    if (!text || text === PLAIN_PH || text === OBS_PH) return;
     navigator.clipboard.writeText(text).then(() => {
-      copyBtn.textContent = 'Copied!';
-      copyBtn.classList.add('copied');
+      const orig = btn.innerHTML;
+      btn.innerHTML = `<svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Copied!`;
+      btn.classList.add('ok');
+      setTimeout(() => { btn.innerHTML = orig; btn.classList.remove('ok'); }, 1800);
+      showToast(msg);
+    });
+  }
+
+  urlInput.addEventListener('input', update);
+
+  copyPlain.addEventListener('click', () =>
+    copyText(plainOut.value, copyPlain, '✓ Plain loadstring copied'));
+
+  copyObs.addEventListener('click', () =>
+    copyText(obsOut.value, copyObs, '✓ Obfuscated loadstring copied'));
+
+  copyBoth.addEventListener('click', () => {
+    const p = plainOut.value, o = obsOut.value;
+    if (!p || p === PLAIN_PH) return;
+    const combined = `-- Plain\n${p}\n\n-- Obfuscated\n${o}`;
+    navigator.clipboard.writeText(combined).then(() => {
+      copyBoth.textContent = '✓ Copied both!';
       setTimeout(() => {
-        copyBtn.textContent = 'Copy';
-        copyBtn.classList.remove('copied');
+        copyBoth.innerHTML = `<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy Both`;
       }, 1800);
+      showToast('✓ Both loadstrings copied to clipboard');
     });
   });
 
-  // Allow clicking the output box to also copy
-  output.addEventListener('click', () => {
-    if (output.value && output.value !== PLACEHOLDER) {
-      output.select();
+  clearBtn.addEventListener('click', () => {
+    urlInput.value = '';
+    urlInput.classList.remove('valid','invalid');
+    update();
+    urlInput.focus();
+    showToast('Cleared');
+  });
+
+  // Click textarea to select all
+  [plainOut, obsOut].forEach(ta => {
+    ta.addEventListener('click', () => {
+      if (!ta.classList.contains('placeholder')) ta.select();
+    });
+  });
+
+  // Ctrl+Enter to copy plain
+  urlInput.addEventListener('keydown', e => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+      e.preventDefault();
+      copyText(plainOut.value, copyPlain, '✓ Plain loadstring copied');
     }
   });
 </script>
