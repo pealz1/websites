@@ -824,7 +824,11 @@
     const val  = inputEl.value;
     const lines = val ? val.split('\n').length : 0;
     const bytes = new TextEncoder().encode(val).length;
-    inputMeta.textContent = `${lines} line${lines !== 1 ? 's' : ''} · ${fmtBytes(bytes)}`;
+    const MAX = 2 * 1024 * 1024;
+    const over = bytes > MAX;
+    const warn = !over && bytes > MAX * 0.85;
+    inputMeta.textContent = `${lines} line${lines !== 1 ? 's' : ''} · ${fmtBytes(bytes)} / 2 MB`;
+    inputMeta.style.color = over ? 'var(--red, #f87171)' : warn ? 'var(--yellow, #fbbf24)' : '';
   });
 
   // ── Obfuscate ─────────────────────────────────────────────────────────────
@@ -834,6 +838,13 @@
     const code = inputEl.value.trim();
     if (!code) {
       showToast('Paste some code first');
+      return;
+    }
+
+    const codeBytes = new TextEncoder().encode(code).length;
+    if (codeBytes > 2 * 1024 * 1024) {
+      showError(`Script is too large (${fmtBytes(codeBytes)}). Maximum size is 2 MB.`);
+      showToast('✗ Script exceeds 2 MB limit', 3000);
       return;
     }
 
