@@ -45,6 +45,24 @@ arg = {}
 
 package.path = "?.lua;" .. package.path
 
+-- Lua 5.1 polyfills (prometheus.lua normally sets these, but we bypass it)
+_G.newproxy = _G.newproxy or function(arg)
+  if arg then return setmetatable({}, {}) end
+  return {}
+end
+
+if not pcall(function() return math.random(1, 2^40) end) then
+  local _r = math.random
+  math.random = function(a, b)
+    if not a and not b then return _r() end
+    if not b then return math.random(1, a) end
+    if a > b then a, b = b, a end
+    local diff = b - a
+    if diff > 2^31 - 1 then return math.floor(_r() * diff + a)
+    else return _r(a, b) end
+  end
+end
+
 -- Read source code from virtual file (set by JS before engine creation)
 local f = assert(io.open(__src_file, "r"), "cannot open source file")
 local sourceCode = f:read("*a")
